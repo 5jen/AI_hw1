@@ -19,11 +19,11 @@ public class Map {
 	 BufferedReader br = new BufferedReader(new FileReader(fileName));
 	 
 	 String line;
-	 int row = 0;
+	 row = 0;
 	 
 	 while ((line = br.readLine())!= null){
 		 String[] vals = line.trim().split(" ");
-		 
+		 col = vals.length;
 		 for(int col = 0; col<vals.length;col++){
 			 System.out.print(vals[col]+'\n');
 			 if(vals[col].equals("G")){
@@ -45,9 +45,17 @@ public class Map {
  }
  
  static void printMap(){
-	 for(int x=0;x<10;x++){
-		 for(int y=0;y<10;y++){
+	 for(int x=0;x<row;x++){
+		 for(int y=0;y<col;y++){
+			 if(newMap[x][y]=='G'){
+				 System.out.print("G ");
+			 }
+			 else if(newMap[x][y]=='S'){
+				 System.out.print("S ");
+			 }
+			 else {
 			 System.out.print(newMap[x][y]+" ");
+			 }
 		 }
 		 System.out.print('\n');
 	 }
