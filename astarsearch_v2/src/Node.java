@@ -9,7 +9,8 @@ public class Node {
 	double score = 0;
 	String action;
 	int direction = 0; //1 vertical 2 horizontal
-
+	int nodeDepth = 0;
+	double actCost;
 	Node(Position pos) {
 		position = pos;
 	}
@@ -36,7 +37,7 @@ public class Node {
 	double g(Node nextNode, ArrayMap map) {
 		double actionCost = 0;
 		Position next = nextNode.position;
-		
+		nodeDepth++;
 		System.out.println("Before go: " + this);
 		if(position.x == next.x && (direction == 1)) {//vertical no turn
 			if(Math.abs(position.y - next.y) == 1) {
@@ -72,19 +73,14 @@ public class Node {
 			actionCost += Math.ceil(map.newMap[position.y][position.x]/(double)3);
 		}
 		System.out.println("After go:" + this);
-		return map.newMap[next.y][next.x] + actionCost;
+		nextNode.actCost = map.newMap[next.y][next.x] + actionCost;
+		return nextNode.actCost;
 	}
 
-	static void printOutPath(Node endNode) {
-		Node cur;
-		System.out.println("Printing Out the Path:");
-		for (cur = endNode; cur != null; cur = cur.from) {
-			System.out.println(cur);
-		}
-	}
+
 
 	public String toString() {
-		return "Node: " + position.toString() + " Score: " + score +" dir: " +direction
-				+ " Action: " + action;
+		return "Node: " + position.toString() + " eva_Score: " + score +" dir: " +direction
+				+ " Action: " + action + " the step: "+actCost;
 	}
 }

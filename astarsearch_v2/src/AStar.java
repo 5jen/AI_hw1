@@ -7,13 +7,15 @@ import java.util.Set;
  */
 public class AStar {
     ArrayList<Node> unexpanded = new ArrayList<>();
+    ArrayList<Node> expandedNode = new ArrayList<>();
     ArrayMap map;
     boolean pathFound = false;
     Node goalNode;
     int direction = 0; 
-
-    AStar(ArrayMap map) {
+    int hf;//Heuristic function switch
+    AStar(ArrayMap map,int hf) {
         this.map = map;
+        this.hf = hf;
     }
 
     void startSearch() {
@@ -21,7 +23,7 @@ public class AStar {
         Position goalPos = new Position(map.gpx, map.gpy);
         Node endNode;
         if((endNode = search(startPos, goalPos, map)) != null) {
-            Node.printOutPath(endNode);
+            printOutPath(endNode);
         }
 
     }
@@ -56,6 +58,7 @@ public class AStar {
                 System.out.println("!null");
                 expand(lowestScoreNode, goal, map);
                 unexpanded.remove(lowestScoreNode);
+                expandedNode.add(lowestScoreNode);
             }
             //System.out.println(i++ + "loop end\n");
         }
@@ -72,7 +75,8 @@ public class AStar {
             up.from = curNode;
             up.score = up.from.score;
             up.direction = up.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+            up.nodeDepth = up.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(up, map);
             //up.direction = up.from.direction;
             up.score += h_return + g_return;
@@ -93,7 +97,8 @@ public class AStar {
         	bashUpNode.from = curNode;
         	bashUpNode.score = bashUpNode.from.score;
         	bashUpNode.direction = bashUpNode.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+        	bashUpNode.nodeDepth = bashUpNode.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(bashUpNode, map);
             //bashUpNode.direction = bashUpNode.from.direction;
             bashUpNode.score += h_return + g_return;
@@ -108,7 +113,8 @@ public class AStar {
         	bashDownNode.from = curNode;
         	bashDownNode.score = bashDownNode.from.score;
         	bashDownNode.direction = bashDownNode.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+        	bashDownNode.nodeDepth = bashDownNode.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(bashDownNode, map);
             //bashDownNode.direction = bashDownNode.from.direction;
             bashDownNode.score += h_return + g_return;
@@ -123,7 +129,8 @@ public class AStar {
         	bashLeftNode.from = curNode;
         	bashLeftNode.score = bashLeftNode.from.score;
         	bashLeftNode.direction = bashLeftNode.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+        	bashLeftNode.nodeDepth = bashLeftNode.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(bashLeftNode, map);
             //bashLeftNode.direction = bashLeftNode.from.direction;
             bashLeftNode.score += h_return + g_return;
@@ -138,7 +145,8 @@ public class AStar {
         	bashRightNode.from = curNode;
         	bashRightNode.score = bashRightNode.from.score;
         	bashRightNode.direction = bashRightNode.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+        	bashRightNode.nodeDepth = bashRightNode.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(bashRightNode, map);
             //bashRightNode.direction = bashRightNode.from.direction;
             bashRightNode.score += h_return + g_return;
@@ -153,7 +161,8 @@ public class AStar {
             down.from = curNode;
             down.score = down.from.score;
             down.direction = down.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+            down.nodeDepth = down.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(down, map);
             //down.direction = down.from.direction;
             down.score += h_return + g_return;
@@ -174,7 +183,8 @@ public class AStar {
             left.from = curNode;
             left.score = left.from.score;
             left.direction = left.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+            left.nodeDepth = left.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(left, map);
             //left.direction = left.from.direction;
             left.score += h_return + g_return;
@@ -192,7 +202,8 @@ public class AStar {
             right.from = curNode;
             right.score = right.from.score;
             right.direction = right.from.direction;
-            double h_return = h(curNode.position, goal, 1);
+            right.nodeDepth = right.from.nodeDepth;
+            double h_return = h(curNode.position, goal, hf);
             double g_return = curNode.g(right, map);
             //right.direction = right.from.direction;
             right.score += h_return + g_return;
@@ -210,8 +221,8 @@ public class AStar {
         return map.newMap[next.y][next.x];
     }
 
-    int h(Position cur, Position goal, int option) {
-        int ret = 0;
+    double h(Position cur, Position goal, int option) {
+        double ret = 0;
         switch(option) {
             case 1:
                 ret = h1();
@@ -238,27 +249,47 @@ public class AStar {
         return ret;
     }
 
-    int h1() {
+    double h1() {
         return 0;
     }
 
-    int h2(Position cur, Position goal) {
+    double h2(Position cur, Position goal) {
         return Math.min(Math.abs(cur.x - goal.x), Math.abs(cur.y - goal.y));
     }
 
-    int h3(Position cur, Position goal) {
+    double h3(Position cur, Position goal) {
         return Math.max(Math.abs(cur.x - goal.x), Math.abs(cur.y - goal.y));
     }
 
-    int h4(Position cur, Position goal) {
-        return 0;
+    double h4(Position cur, Position goal) {
+        return Math.abs(cur.x - goal.x)+ Math.abs(cur.y - goal.y);
     }
 
-    int h5(Position cur, Position goal) {
-        return 0;
+    double h5(Position cur, Position goal) {
+        if(cur.x == goal.x || cur.y==goal.y){
+        	return Math.abs(cur.x - goal.x)+ Math.abs(cur.y - goal.y);
+        }
+        else{
+        	return Math.abs(cur.x - goal.x)+ Math.abs(cur.y - goal.y)+1;
+        }
     }
 
-    int h6(Position cur, Position goal) {
-        return 0;
+    double h6(Position cur, Position goal) {
+        return h5(cur,goal)*3;
     }
+    
+	void printOutPath(Node endNode) {
+		Node cur;
+		double initScore = 100;
+		System.out.println("Printing Out the Path:");
+		for (cur = endNode; cur != null; cur = cur.from) {
+			initScore -= cur.actCost;
+			System.out.println(cur);
+		}
+		System.out.println("final score: "+initScore);
+		int expanSize = expandedNode.size() + unexpanded.size();
+		int depth = endNode.nodeDepth;
+		double branFactor = Math.pow(expanSize,1/(double)depth);
+		System.out.println("number of Nodes: " + expanSize + "\n"+"Depth: "+ depth+"\n"+"breanching factor: "+ branFactor);
+	}
 }
